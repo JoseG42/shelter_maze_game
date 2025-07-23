@@ -1,0 +1,87 @@
+/* Style sheet for the Waggin' Tails Maze Game */
+/* Style the game container */
+#game-container {
+    width: 100%;
+    height: 600px;
+    border: 2px solid #000;
+    position: relative;
+    overflow: hidden;
+    display : grid;
+    grid-template-columns: repeat(20, 1fr);
+    grid-template-rows: repeat(20, 1fr);
+    background-color: #9895a6;
+}
+/* Style for the title card */
+.title-card {
+    /* use the entire grid */
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+
+}
+/* Style for the title */
+.title {
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Style for the start button */
+#start-game {
+    display: block;
+    margin: 0 auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#start-game:hover {
+    background-color: #0056b3;
+}
+
+/* Style for label elements */
+label {
+    display: block;
+    margin: 10px 0;
+    font-size: 24px;
+    text-align: center;
+}
+
+#dog-name {
+    width: 200px;
+    padding: 10px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    /* Center inside the title card */
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+}
+/* Style for the dog */
+.dog {
+    width: 50px;
+    height: 50px;
+    background-color: rgb(166, 100, 43);
+    position: absolute;
+}
+
+/* Style for the walls */
+.wall {
+    background-color: #333;
+}
+
+/* Style for the shelter */
+.shelter {
+    background-color: #ffcc00;
+}
+
+/* Style for the home */
+.home {
+    background-color: #00cc8f;
+}
