@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const victoryCard = document.querySelector('.victory-card');
     // reset button
     const resetButton = document.getElementById('reset');
+    // fail screen
+    const failCard = document.createElement('div');
+    failCard.classList.add('fail-card');
+    failCard.textContent = 'You hit a wall! Press Space to try again.';
+    gameContainer.appendChild(failCard);
 
     // variables for the game elements
     // game status
@@ -33,21 +38,12 @@ document.addEventListener('DOMContentLoaded', function() {
         //console.log('Game started!');
         // display dog
         dog.style.display = 'block';
+        // dog starts at 1,1
+        dog.style.left = '1px';
+        dog.style.top = '1px';
         // dog's text is dogNameInput value or default name
         dog.textContent = dogNameInput.value.trim() || 'Buddy'; // default name if input is empty
     }
-
-    // // function to make the dog
-    // function createDog(name) {
-    //     // create a new div element for the dog
-    //     const newDog = document.createElement('div');
-    //     newDog.classList.add('dog');
-    //     newDog.textContent = name;
-    //     gameContainer.appendChild(newDog);
-    //     // log the dog's data
-    //     //console.log(newDog);
-    //     var dog = document.querySelector('.dog');
-    // }
 
     // function to make a wall at a specific position
     function createWall(fromY, fromX, toY, toX) {
@@ -80,9 +76,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // function to generate the maze
     function generateMaze() {
         // make the walls
-        createWall(1, 4, 1, 21);
-        createWall(1, 4, 10, 4);
-        createWall(5, 11, 9, 19);
+        createWall(4, 1, 21, 2);
+        createWall(1, 4, 2, 21);
+        createWall(20, 2, 21, 18);
+        createWall(10, 20, 17, 21);
+        createWall(17, 18, 18, 21);
+        createWall(2, 5, 18, 7);
+        createWall(5, 11, 8, 19);
+        createWall(10, 9, 20, 10);
+        createWall(9, 12, 15, 18);
+
         // make the shelter
         createShelter(2, 19, 6, 21);
         // make the home
@@ -135,24 +138,38 @@ document.addEventListener('DOMContentLoaded', function() {
             dogRect.x + dogRect.width > homeRect.x &&
             dogRect.y < homeRect.y + homeRect.height &&
             dogRect.y + dogRect.height > homeRect.y) {
-                console.log('Dog is in the home but does not have an owner!');
+                // alert 'dog is not allowed in the home without an owner'
+                alert('Dog is not allowed in the home without an owner!');
+                //console.log('Dog is in the home but does not have an owner!');
+                // reset the dog's position
+                dog.style.left = '0px';
             }
     }
 
     // function to check check if the dog touches the wall
     function checkDogTouchesWall() {
         const dogRect = dog.getBoundingClientRect();
-        const wallRects = document.querySelectorAll('.wall');
-        // log wallRects
-        console.log(wallRects);
+        const walls = document.querySelectorAll('.wall');
+        // log walls
+        //console.log(walls);
 
-        wallRects.forEach(wallRect => {
+        // loop through each wall
+        walls.forEach(wall => {
+            const wallRect = wall.getBoundingClientRect();
+
             if (dogRect.x < wallRect.x + wallRect.width &&
                 dogRect.x + dogRect.width > wallRect.x &&
                 dogRect.y < wallRect.y + wallRect.height &&
                 dogRect.y + dogRect.height > wallRect.y) {
-                    // dog is touching the wall
-                    console.log('Dog is touching the wall!');
+                    // dog touches the wall
+                    console.log('Dog touches the wall!');
+                    // pause the game
+                    gamePaused = true;
+                    // reset the dog's position
+                    dog.style.left = '0px';
+                    dog.style.top = '0px';
+                    // display the fail card
+                    failCard.style.display = 'block';
                 }
         });
     }
@@ -161,14 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
     startButton.addEventListener('click', () => {
         // start the game
         startGame();
-        // // get the dog name from the input
-        // let dogName = dogNameInput.value.trim();
-        // // if the dog name is empty, set a default name
-        // if (dogName === '') {
-        //     dogName = 'Buddy';
-        // }
-        // // create the dog with the given name
-        // createDog(dogName);
         // generate the maze
         generateMaze();
         // log game status
@@ -179,45 +188,59 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // listen for spacebar key to pause or resume the game
     document.addEventListener('keydown', (event) => {
-        if (event.code === 'Space') {
+        // if the fail card is displayed and the spacebar is pressed
+        if (failCard.style.display === 'block' && event.code === 'Space') {
+            // hide the fail card
+            failCard.style.display = 'none';
+            // reset the game
+            gamePaused = !gamePaused; // resume the game
+            // log game status
+            console.log('Game is paused:', gamePaused);
+        }
+        // else if spacebar is pressed
+        else if (event.code === 'Space') {
             gamePaused = !gamePaused;
             console.log('Game is paused:', gamePaused);
         }
     });
 
-    dog.addEventListener('mouseover', () => {
+    dog.addEventListener('mouseover', (event) => {
+        // log dog's left and top
+        //console.log(`dog position on mouseover: ${dog.style.left},${dog.style.top}`)
+        // log event.layerX and event.layerY
+        //console.log(`Mouse position on mouseover: ${event.layerX}, ${event.layerY}`);
+        if (!gamePaused) {
+            // log half of event.layerX
+            //console.log(`Half of x ${event.layerX / 2}`)
+            // log the type of half of event.layerX
+
+            // dog.style.left should be moved to the left by half of event.layerX
+            dog.style.left = `${parseInt(dog.style.left) - event.layerX / 2}px`;
+            // dog.style.top should be moved up by half of event.layerY
+            dog.style.top = `${parseInt(dog.style.top) + event.layerY / 2}px`;
+        }
+    });
+
+    // listen for mousemove events on dog
+    dog.addEventListener('mousemove', (event) => {
+        // log event.layerX and event.layerY
         // if the game is not paused
         if (!gamePaused) {
-            // follow the cursor
-            dog.addEventListener('mousemove', (event) => {
-                // if the game is not paused
-                if (!gamePaused) {
-                    dog.style.left = `${event.clientX - dog.offsetWidth / 2}px`;
-                    dog.style.top = `${event.clientY - dog.offsetHeight / 2}px`;
-                }
-            });
-
-            // once every second
-            var oneSecondInterval = setInterval(() => {
-                // check if the dog is in the shelter
-                checkDogInShelter();
-                // check if the dog is in the home
-                checkDogInHome();
-                // check if the dog touches the wall
-                checkDogTouchesWall();
-            }, 1000);
-            
-            // // if game paused is true break the interval
-            // if (gamePaused === true) {
-            //     clearInterval(oneSecondInterval);
-            // }
+            // get the bounding rectangle of the game container
+            const containerRect = gameContainer.getBoundingClientRect();
+            // calculate the mouse position relative to the container
+            const mouseX = event.clientX - containerRect.left;
+            const mouseY = event.clientY - containerRect.top;
+            // move the dog to the mouse position
+            dog.style.left = `${mouseX - dog.offsetWidth / 2}px`;
+            dog.style.top = `${mouseY - dog.offsetHeight / 2}px`;
         }
-        // else
-        // else {
-        //     // stay
-        //     dog.style.left = `${dog.offsetLeft}px`;
-        //     dog.style.top = `${dog.offsetTop}px`;
-        // }
+        // check if the dog is in the shelter
+        checkDogInShelter();
+        // check if the dog is in the home
+        checkDogInHome();
+        // check if the dog touches the wall
+        checkDogTouchesWall();
     });
 
     // listen for click events on the reset button
